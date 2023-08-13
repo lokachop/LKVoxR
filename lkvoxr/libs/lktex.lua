@@ -123,8 +123,8 @@ function LKTEX.LoadPPM(name, path)
     LKTEX.Textures[name] = data
 end
 
-LKTEX.LoadPPM("loka", "textures/loka.ppm")
-LKTEX.LoadPPM("jelly", "textures/jelly.ppm")
-LKTEX.LoadPPM("jet", "textures/jet.ppm")
-LKTEX.LoadPPM("mandrill", "textures/mandrill.ppm")
-LKTEX.LoadPPM("none", "textures/loka.ppm")
+LKTEX.LoadPPM("loka",       "textures/loka_lq.ppm")
+LKTEX.LoadPPM("jelly",      "textures/jelly_lq.ppm")
+LKTEX.LoadPPM("jet",        "textures/jet_lq.ppm")
+LKTEX.LoadPPM("mandrill",   "textures/mandrill_lq.ppm")
+LKTEX.LoadPPM("none",       "textures/loka_lq.ppm")

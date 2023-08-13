@@ -54,6 +54,13 @@ function LKVoxR.ScreenToWorldDir(x, y)
 	return dirGet
 end
 
+function LKVoxR.ChangeResolution(newW, newH)
+	LKVOXR_RENDER_RES_X = newW
+	LKVOXR_RENDER_RES_Y = newH
+	drawW, drawH = sw / LKVOXR_RENDER_RES_X, sh / LKVOXR_RENDER_RES_Y
+	calculateForward()
+end
+
 local SIDE_X = 0
 local SIDE_Y = 1
 local SIDE_Z = 2
@@ -195,10 +202,16 @@ local doShadows = LKVOXR_DO_SHADOWS
 local sunDirTest = Vector(5, 3, 2)
 sunDirTest:Normalize()
 
+local fID = 0
 function LKVoxR.RenderActiveUniverse()
+	fID = fID + 1
 	for i = 0, (LKVOXR_RENDER_RES_X * LKVOXR_RENDER_RES_Y) do
 		local xc = i % LKVOXR_RENDER_RES_X
 		local yc = math.floor(i / LKVOXR_RENDER_RES_X)
+
+		if (((xc + yc) + fID) % 2) == 0 then
+			goto _contRender
+		end
 
 		local dirGet = DirTbl[xc][yc]:Copy()
 		dirGet:Rotate(LKVoxR.CamAngZ)
@@ -210,7 +223,7 @@ function LKVoxR.RenderActiveUniverse()
 		end
 
 		local camPos = LKVoxR.CamPos
-		local hit, side, dist, hitPos, hitNormal, voxID = LKVoxR.RaycastWorld(camPos, dirGet)
+		local hit, side, dist, hitPos, hitNormal, voxID, mapPos, ddx, ddy, ddz = LKVoxR.RaycastWorld(camPos, dirGet)
 
 		if hit then
 			local voxNfo = LKVoxR.GetVoxelInfoFromID(voxID)
@@ -267,5 +280,7 @@ function LKVoxR.RenderActiveUniverse()
 
 			--drawPixel((dirGet[1] + 1) * 128, (dirGet[2] + 1) * 128, (dirGet[3] + 1) * 128, xc, yc)
 		end
+
+		::_contRender::
 	end
 end

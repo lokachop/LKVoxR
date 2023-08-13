@@ -10,6 +10,7 @@ function love.update(dt)
 	CurTime = CurTime + dt
 
 	LKVoxR.NoclipCam(dt)
+	LKVoxR.DynScaleThink(dt)
 end
 
 function love.keypressed(key)
@@ -33,9 +34,20 @@ function love.mousepressed(x, y, button)
 	LKVoxR.PopUniverse()
 end
 
+local canvasTest = love.graphics.newCanvas(love.graphics.getDimensions())
+canvasTest:setFilter("nearest", "nearest", 0)
 function love.draw()
-	love.graphics.clear(.1, .15, .2)
-	LKVoxR.PushUniverse(UnivTest)
-		LKVoxR.RenderActiveUniverse()
-	LKVoxR.PopUniverse()
+	--love.graphics.clear(.1, .15, .2)
+	love.graphics.setCanvas(canvasTest)
+	love.graphics.setBlendMode("alpha")
+		LKVoxR.PushUniverse(UnivTest)
+			LKVoxR.RenderActiveUniverse()
+		LKVoxR.PopUniverse()
+	love.graphics.setCanvas()
+
+
+
+	love.graphics.setBlendMode("alpha", "premultiplied")
+	love.graphics.setColor(1, 1, 1, 1)
+	love.graphics.draw(canvasTest, 0, 0)
 end
