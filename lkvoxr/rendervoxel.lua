@@ -1,6 +1,12 @@
 LKVoxR = LKVoxR or {}
 
+local math = math
+local math_floor = math.floor
+local math_abs = math.abs
+
+
 local DirTbl = {}
+-- from https://www.youtube.com/watch?v=YSOBCp2mito
 local function calculateForward()
 	local wDiv = LKVOXR_RENDER_RES_X
 	local hDiv = LKVOXR_RENDER_RES_Y
@@ -25,16 +31,8 @@ function LKVoxR.GetScreenDirTable()
 	return DirTbl
 end
 
-
-
 -- OVERRIDE: change to appropiate call
-local scr_w, scr_h = love.graphics.getDimensions()
-local function getScrS()
-	return scr_w, scr_h
-end
-
-
-local sw, sh = getScrS()
+local sw, sh = love.graphics.getDimensions()
 local drawW, drawH = sw / LKVOXR_RENDER_RES_X, sh / LKVOXR_RENDER_RES_Y
 
 local function drawPixel(r, g, b, x, y)
@@ -42,6 +40,7 @@ local function drawPixel(r, g, b, x, y)
 	love.graphics.rectangle("fill", x * drawW, y * drawH, drawW, drawH)
 end
 
+-- TODO: move to a util file...
 function LKVoxR.ScreenToWorldDir(x, y)
 	-- transform to the small viewport
 	local xc = math.floor(x / drawW)
@@ -55,12 +54,9 @@ function LKVoxR.ScreenToWorldDir(x, y)
 	return dirGet
 end
 
-
-
-SIDE_X = 0
-SIDE_Y = 1
-SIDE_Z = 2
-
+local SIDE_X = 0
+local SIDE_Y = 1
+local SIDE_Z = 2
 
 -- 3d adaptation of https://lodev.org/cgtutor/raycasting.html
 function LKVoxR.RaycastWorld(pos, dir)
@@ -68,9 +64,9 @@ function LKVoxR.RaycastWorld(pos, dir)
 	local posY = pos[2]
 	local posZ = pos[3]
 
-	local mapX = math.floor(posX)
-	local mapY = math.floor(posY)
-	local mapZ = math.floor(posZ)
+	local mapX = math_floor(posX)
+	local mapY = math_floor(posY)
+	local mapZ = math_floor(posZ)
 
 	local rayDirX = dir[1]
 	local rayDirY = dir[2]
@@ -81,9 +77,9 @@ function LKVoxR.RaycastWorld(pos, dir)
 	local sideDistY = 0
 	local sideDistZ = 0
 
-	local deltaDistX = math.abs(1 / rayDirX)
-	local deltaDistY = math.abs(1 / rayDirY)
-	local deltaDistZ = math.abs(1 / rayDirZ)
+	local deltaDistX = math_abs(1 / rayDirX)
+	local deltaDistY = math_abs(1 / rayDirY)
+	local deltaDistZ = math_abs(1 / rayDirZ)
 	local perpWallDist = 0
 
 	local stepX = 0
@@ -170,20 +166,16 @@ function LKVoxR.RaycastWorld(pos, dir)
 		::_contRc::
 	end
 
-	--if not hit then
-	--	print("nofound; ", mapX, mapY, mapZ)
-	--end
-
 	local normal = Vector(0, 0, 0)
 	if side == SIDE_X then
 		perpWallDist = sideDistX - deltaDistX
-		normal = Vector(-stepX, 0, 0)
+		normal[1] = -stepX
 	elseif side == SIDE_Y then
 		perpWallDist = sideDistY - deltaDistY
-		normal = Vector(0, -stepY, 0)
+		normal[2] = -stepY
 	else
 		perpWallDist = sideDistZ - deltaDistZ
-		normal = Vector(0, 0, -stepZ)
+		normal[3] = -stepZ
 	end
 
 	local posHit = pos + (dir * perpWallDist)
@@ -195,11 +187,13 @@ end
 
 local _up = Vector(0, 1, 0)
 local _halfSteps = (LKVOXR_TRACE_STEPS * .75)
-local modV = 1
 local function lerp(t, a, b)
 	return a * (1 - t) + b * t
 end
 
+local doShadows = LKVOXR_DO_SHADOWS
+local sunDirTest = Vector(5, 3, 2)
+sunDirTest:Normalize()
 
 function LKVoxR.RenderActiveUniverse()
 	for i = 0, (LKVOXR_RENDER_RES_X * LKVOXR_RENDER_RES_Y) do
@@ -217,13 +211,6 @@ function LKVoxR.RenderActiveUniverse()
 
 		local camPos = LKVoxR.CamPos
 		local hit, side, dist, hitPos, hitNormal, voxID = LKVoxR.RaycastWorld(camPos, dirGet)
-		--local r = side == SIDE_X and 255 or 64
-		--local g = side == SIDE_Y and 255 or 64
-		--local b = side == SIDE_Z and 255 or 64
-
-		local r = (hitNormal[1] + 1) * 128
-		local g = (hitNormal[2] + 1) * 128
-		local b = (hitNormal[3] + 1) * 128
 
 		if hit then
 			local voxNfo = LKVoxR.GetVoxelInfoFromID(voxID)
@@ -234,22 +221,21 @@ function LKVoxR.RenderActiveUniverse()
 
 			local distDiv = dist / _halfSteps
 
-			local tx = (hitPos[1] % modV)
-			local ty = (hitPos[2] % modV)
-			local tz = (hitPos[3] % modV)
-
+			local tx = (hitPos[1] % 1)
+			local ty = (hitPos[2] % 1)
+			local tz = (hitPos[3] % 1)
 
 			local rc, gc, bc = 32, 64, 96
 			local tgx, tgy = 1, 1
 			if side == SIDE_X then
-				tgx = math.floor(tz * tw)
-				tgy = math.floor(math.abs(1 - ty) * th)
+				tgx = math_floor(tz * tw)
+				tgy = math_floor((1 - ty) * th)
 			elseif side == SIDE_Y then
-				tgx = math.floor(tx * tw)
-				tgy = math.floor(tz * th)
+				tgx = math_floor(tx * tw)
+				tgy = math_floor(tz * th)
 			elseif side == SIDE_Z then
-				tgx = math.floor(tx * tw)
-				tgy = math.floor(math.abs(1 - ty) * th)
+				tgx = math_floor(tx * tw)
+				tgy = math_floor((1 - ty) * th)
 			end
 
 			local cont = tex[tgx + (tgy * tw)]
@@ -257,6 +243,15 @@ function LKVoxR.RenderActiveUniverse()
 				rc = cont[1]
 				gc = cont[2]
 				bc = cont[3]
+			end
+
+			if doShadows then
+				local shadowHit = LKVoxR.RaycastWorld(hitPos + (hitNormal * 0.001), sunDirTest)
+				if shadowHit then
+					rc = rc * .5
+					gc = gc * .5
+					bc = bc * .5
+				end
 			end
 
 			local lerpR = lerp(distDiv, rc, 0)

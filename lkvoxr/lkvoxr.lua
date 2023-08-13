@@ -12,7 +12,7 @@ LKVoxR.LoadFile("libs/lmat") -- make sure to load lmat first
 LKVoxR.LoadFile("libs/lvec")
 LKVoxR.LoadFile("libs/lang")
 LKVoxR.LoadFile("libs/lknoise")
-LKVoxR.LoadFile("libs/lktex")
+LKVoxR.LoadFile("libs/lktex") -- TODO: lktex isn't a full lib still...
 
 if (not Vector) or (not Matrix) or (not Angle) then -- hack hack
     Vector = LVEC.Vector
