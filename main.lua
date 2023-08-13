@@ -4,11 +4,6 @@ function love.load()
 
 
 	UnivTest = LKVoxR.NewUniverse("test1")
-	--LKVoxR.PushUniverse(UnivTest)
-	--	print("asd", LKVoxR.GetWorldContents(8, 2, 2))
-	--LKVoxR.PopUniverse()
-
-	--print(read[1] .. ", " .. read[2] .. ", " .. read[3])
 end
 
 function love.update(dt)

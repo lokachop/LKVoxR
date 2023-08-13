@@ -5,16 +5,15 @@
     Angle
     Library
 
-    coded by Lokachop, contact @ lokachop (formerly Lokachop#5862) or lokachop@gmail.com
+    coded by Lokachop, contact @ Lokachop#5862, lokachop or lokachop@gmail.com
+    licensed under the MIT license (refer to LICENSE)
+
+    this lib is terrible btw :(
 ]]--
 
 LANG = LANG or {}
 
 local math = math
-local math_sqrt = math.sqrt
-local math_cos = math.cos
-local math_sin = math.sin
-
 local _rotMatrixCalc = LMAT.Matrix()
 local _pattForm = "%4.2f, %4.2f, %4.2f"
 local a_meta = {

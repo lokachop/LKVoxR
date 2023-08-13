@@ -5,8 +5,8 @@
     Vector
     Library
 
-    coded by lokachop, contact @ Lokachop#5862 or lokachop@gmail.com
-
+    coded by Lokachop, contact @ Lokachop#5862, lokachop or lokachop@gmail.com
+    licensed under the MIT license (refer to LICENSE)
 ]]--
 
 LVEC = LVEC or {}
@@ -146,14 +146,7 @@ local v_meta = {
         x[3] = -x[3]
     end,
 
-    -- found on a love2d post from 2013
-    -- DEPRECATED! please use matrices
-    ["Rotate"] = function(x, y) -- y is angle
-        --y = y:Copy()
-        --y[1] = math.rad(y[1] % 360)
-        --y[2] = math.rad(y[2] % 360)
-        --y[3] = math.rad(y[3] % 360)
-
+    ["Rotate"] = function(x, y)
         _rotMatrixCalc:Identity()
         _rotMatrixCalc:SetAngles(y)
 
@@ -161,39 +154,13 @@ local v_meta = {
         x[1] = mr[1]
         x[2] = mr[2]
         x[3] = mr[3]
-
-
-        --[[
-        y = y:Copy()
-        y[1] = math.rad(y[1] % 360)
-        y[2] = math.rad(y[2] % 360)
-        y[3] = math.rad(y[3] % 360)
-
-        local xc, yc, zc
-
-
-        -- x-axis
-        yc, zc = x[2], x[3]
-        x[2] = yc * math_cos(y[1]) + zc * math_sin(y[1])
-        x[3] = zc * math_cos(y[1]) - yc * math_sin(y[1])
-
-        -- y-axis
-        xc, zc = x[1], x[3]
-        x[1] = xc * math_cos(y[2]) - zc * math_sin(y[2])
-        x[3] = zc * math_cos(y[2]) + xc * math_sin(y[2])
-
-        -- z-axis
-        xc, yc = x[1], x[2]
-        x[1] = xc * math_cos(y[3]) + yc * math_sin(y[3])
-        x[2] = yc * math_cos(y[3]) - xc * math_sin(y[3])
-        ]]--
     end,
     ["Copy"] = function(x)
         return LVEC.Vector(x[1], x[2], x[3], x[4])
     end,
 
     -- rotations
-     -- tacky until i do proper matrices
+    -- tacky until i do proper matrices
     ["Right"] = function(x)
         _rotMatrixCalc:Identity()
         _rotMatrixCalc:SetAngles(x)

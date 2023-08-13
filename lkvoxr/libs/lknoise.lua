@@ -1,3 +1,12 @@
+--[[
+	lknoise.lua
+
+	lokachop's noise library
+	coded by Lokachop, contact @ Lokachop#5862, lokachop or lokachop@gmail.com
+	licensed under the MIT license (refer to LICENSE)
+]]--
+
+
 LKNoise = LKNoise or {}
 
 -- https://github.com/WardBenjamin/SimplexNoise/blob/master/SimplexNoise/Noise.cs

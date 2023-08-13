@@ -1,3 +1,10 @@
+--[[
+    lktex.lua
+    
+    lokachop's texture library
+    licensed under the MIT license (refer to LICENSE)
+]]--
+
 LKTEX = LKTEX or {}
 LKTEX.Textures = LKTEX.Textures or {}
 

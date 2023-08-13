@@ -5,8 +5,8 @@
     Matrix
     Library
 
-    coded by lokachop, contact @ Lokachop#5862, lokachop or lokachop@gmail.com
-
+    coded by Lokachop, contact @ Lokachop#5862, lokachop or lokachop@gmail.com
+    licensed under the MIT license (refer to LICENSE)
 ]]--
 
 LMAT = LMAT or {}
