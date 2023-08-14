@@ -65,29 +65,42 @@ local SIDE_X = 0
 local SIDE_Y = 1
 local SIDE_Z = 2
 
+local tblConcatHash = {
+	[1] = "x",
+	[3] = "y",
+	[5] = "z"
+}
+
+local cx_m_cy = LKVOXR_CX_P * LKVOXR_CY_P
 -- 3d adaptation of https://lodev.org/cgtutor/raycasting.html
-function LKVoxR.RaycastWorld(pos, dir)
+local function raycastRender(pos, posMap, dir)
 	local posX = pos[1]
 	local posY = pos[2]
 	local posZ = pos[3]
 
-	local mapX = math_floor(posX)
-	local mapY = math_floor(posY)
-	local mapZ = math_floor(posZ)
+	local mapX = posMap[1]
+	local mapY = posMap[2]
+	local mapZ = posMap[3]
 
 	local rayDirX = dir[1]
 	local rayDirY = dir[2]
 	local rayDirZ = dir[3]
-
 
 	local sideDistX = 0
 	local sideDistY = 0
 	local sideDistZ = 0
 
 	local deltaDistX = math_abs(1 / rayDirX)
+	--local deltaDistX = (1 / rayDirX)
+	--deltaDistX = deltaDistX < 0 and -deltaDistX or deltaDistX
+
 	local deltaDistY = math_abs(1 / rayDirY)
+	--local deltaDistY = (1 / rayDirY)
+	--deltaDistY = deltaDistY < 0 and -deltaDistY or deltaDistY
+
 	local deltaDistZ = math_abs(1 / rayDirZ)
-	local perpWallDist = 0
+	--local deltaDistZ = (1 / rayDirZ)
+	--deltaDistZ = deltaDistZ < 0 and -deltaDistZ or deltaDistZ
 
 	local stepX = 0
 	local stepY = 0
@@ -150,14 +163,24 @@ function LKVoxR.RaycastWorld(pos, dir)
 			break
 		end
 
-		local chunkHash = LKVoxR.WorldToChunkHash(mapX, mapY, mapZ)
+		tblConcatHash[2] = math_floor(mapX / LKVOXR_CX_P)
+		tblConcatHash[4] = math_floor(mapY / LKVOXR_CY_P)
+		tblConcatHash[6] = math_floor(mapZ / LKVOXR_CZ_P)
+
+		local chunkHash = table.concat(tblConcatHash, "")
+		--local chunkHash = LKVoxR.WorldToChunkHash(mapX, mapY, mapZ)
 		local chunkContent = LKVoxR.CurrUniv["chunks"][chunkHash]
 		if not chunkContent then
 			goto _contRc
 		end
 
-		local cbX, cbY, cbZ = LKVoxR.WorldToChunkBlock(mapX, mapY, mapZ)
-		local bInd = LKVoxR.IndexFromCoords(cbX, cbY, cbZ)
+		--local cbX, cbY, cbZ = LKVoxR.WorldToChunkBlock(mapX, mapY, mapZ)
+		local cbX = mapX % LKVOXR_CX_P
+		local cbY = mapY % LKVOXR_CY_P
+		local cbZ = mapZ % LKVOXR_CZ_P
+
+		--local bInd = LKVoxR.IndexFromCoords(cbX, cbY, cbZ)
+		local bInd = cbX + (cbY * LKVOXR_CX_P) + (cbZ * cx_m_cy)
 
 		local cont = chunkContent[bInd]
 		if not cont then
@@ -173,6 +196,7 @@ function LKVoxR.RaycastWorld(pos, dir)
 		::_contRc::
 	end
 
+	local perpWallDist = 0
 	local normal = Vector(0, 0, 0)
 	if side == SIDE_X then
 		perpWallDist = sideDistX - deltaDistX
@@ -185,15 +209,16 @@ function LKVoxR.RaycastWorld(pos, dir)
 		normal[3] = -stepZ
 	end
 
-	local posHit = pos + (dir * perpWallDist)
-	local mapPos = Vector(mapX, mapY, mapZ)
+	local posHit = (dir * perpWallDist)
+	posHit:Add(pos)
+	--local posHit = pos + (dir * perpWallDist)
 
-	return hit, side, perpWallDist, posHit, normal, voxID, mapPos
+	return hit, side, perpWallDist, posHit, normal, voxID
 end
 
 
 local _up = Vector(0, 1, 0)
-local _halfSteps = (LKVOXR_TRACE_STEPS * .75)
+local _halfSteps = (LKVOXR_TRACE_STEPS * .7)
 local function lerp(t, a, b)
 	return a * (1 - t) + b * t
 end
@@ -205,6 +230,13 @@ sunDirTest:Normalize()
 local fID = 0
 function LKVoxR.RenderActiveUniverse()
 	fID = fID + 1
+
+	local camPos = LKVoxR.CamPos
+	local camMap = LKVoxR.CamPos:Copy()
+	camMap[1] = math.floor(camMap[1])
+	camMap[2] = math.floor(camMap[2])
+	camMap[3] = math.floor(camMap[3])
+
 	for i = 0, (LKVOXR_RENDER_RES_X * LKVOXR_RENDER_RES_Y) do
 		local xc = i % LKVOXR_RENDER_RES_X
 		local yc = math.floor(i / LKVOXR_RENDER_RES_X)
@@ -222,8 +254,7 @@ function LKVoxR.RenderActiveUniverse()
 			return
 		end
 
-		local camPos = LKVoxR.CamPos
-		local hit, side, dist, hitPos, hitNormal, voxID, mapPos, ddx, ddy, ddz = LKVoxR.RaycastWorld(camPos, dirGet)
+		local hit, side, dist, hitPos, hitNormal, voxID = raycastRender(camPos, camMap:Copy(), dirGet)
 
 		if hit then
 			local voxNfo = LKVoxR.GetVoxelInfoFromID(voxID)
@@ -232,7 +263,8 @@ function LKVoxR.RenderActiveUniverse()
 			local tdata = tex.data
 			local tw, th = tdata[1], tdata[2]
 
-			local distDiv = dist / _halfSteps
+			local distDiv = math.min(dist / _halfSteps, 1)
+
 
 			local tx = (hitPos[1] % 1)
 			local ty = (hitPos[2] % 1)
@@ -267,18 +299,20 @@ function LKVoxR.RenderActiveUniverse()
 				end
 			end
 
-			local lerpR = lerp(distDiv, rc, 0)
-			local lerpG = lerp(distDiv, gc, 0)
-			local lerpB = lerp(distDiv, bc, 0)
+			local lerpR = lerp(distDiv, rc, 64)
+			local lerpG = lerp(distDiv, gc, 128)
+			local lerpB = lerp(distDiv, bc, 196)
 
 
-			drawPixel(lerpR, lerpG, lerpB, xc, yc)
+			love.graphics.setColor(lerpR * .0039, lerpG * .0039, lerpB * .0039)
+			love.graphics.rectangle("fill", xc * drawW, yc * drawH, drawW, drawH)
 		else
-			--drawPixel(r, g, b, xc, yc)
-			local dotVal = dirGet:Dot(_up)
-			drawPixel(32 + dotVal * 64, 48 + dotVal * 96, 64 + dotVal * 128, xc, yc)
+			local dotVal = dirGet[2] + 1
+			local colBR = 32 + dotVal * 64
+			local colBG = 48 + dotVal * 96
+			local colBB = 64 + dotVal * 128
 
-			--drawPixel((dirGet[1] + 1) * 128, (dirGet[2] + 1) * 128, (dirGet[3] + 1) * 128, xc, yc)
+			drawPixel(colBR, colBG, colBB, xc, yc)
 		end
 
 		::_contRender::

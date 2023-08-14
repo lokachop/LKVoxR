@@ -5,6 +5,7 @@ local sID = 0
 local sampleCount = 4
 
 local dtTarget = 1 / LKVOXR_DYNFPS_FPS_TARGET
+local nextUpgrade = 0
 function LKVoxR.DynScaleThink(dt)
     avgDtSamples[sID] = dt
     sID = ((sID + 1) % sampleCount)
@@ -37,13 +38,15 @@ function LKVoxR.DynScaleThink(dt)
             newW,
             newH
         )
-    elseif dtDelta > .0075 then
+    elseif dtDelta > .0075 and (CurTime > nextUpgrade) then
         local newW = math.min(LKVOXR_RENDER_RES_X + LKVOXR_DYNFPS_RES_LOWER_STEP, LKVOXR_DYNFPS_RES_MAX_X)
         local newH = math.min(LKVOXR_RENDER_RES_Y + LKVOXR_DYNFPS_RES_LOWER_STEP, LKVOXR_DYNFPS_RES_MAX_Y)
         if newW == LKVOXR_RENDER_RES_X and newH == LKVOXR_RENDER_RES_Y then
             return
         end
 
+
+        nextUpgrade = CurTime + .5
         print(LKVOXR_RENDER_RES_X .. "x" .. LKVOXR_RENDER_RES_Y .. "->" .. newW .. "x" .. newH)
 
         sID = 0

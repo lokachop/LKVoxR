@@ -9,11 +9,19 @@ end
 function love.update(dt)
 	CurTime = CurTime + dt
 
-	LKVoxR.NoclipCam(dt)
-	LKVoxR.DynScaleThink(dt)
+	LKVoxR.PushUniverse(UnivTest)
+		LKVoxR.NoclipCam(dt)
+		LKVoxR.DynScaleThink(dt)
+		LKVoxR.PlayerController(dt)
+	LKVoxR.PopUniverse()
 end
 
 function love.keypressed(key)
+	LKVoxR.ToggleMouseGrab(key)
+end
+
+function love.mousemoved(mx, my, dx, dy)
+	LKVoxR.LookAround(dx, dy)
 end
 
 function love.mousepressed(x, y, button)
@@ -35,7 +43,7 @@ function love.mousepressed(x, y, button)
 end
 
 local canvasTest = love.graphics.newCanvas(love.graphics.getDimensions())
-canvasTest:setFilter("nearest", "nearest", 0)
+--canvasTest:setFilter("nearest", "nearest", 0)
 function love.draw()
 	--love.graphics.clear(.1, .15, .2)
 	love.graphics.setCanvas(canvasTest)
