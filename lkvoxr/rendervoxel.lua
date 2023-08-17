@@ -12,7 +12,11 @@ local function calculateForward()
 	local hDiv = LKVOXR_RENDER_RES_Y
 
 	for y = 0, hDiv do
-		DirTbl[y] = {}
+		if not DirTbl[y] then
+			DirTbl[y] = {}
+		end
+
+
 		for x = 0, wDiv do
 			local coeff = math.tan((LKVOXR_FOV / 2) * (3.1416 / 180)) * 2.71828;
 			DirTbl[y][x] = Vector(
@@ -227,6 +231,13 @@ local doShadows = LKVOXR_DO_SHADOWS
 local sunDirTest = Vector(5, 3, 2)
 sunDirTest:Normalize()
 
+
+local sideMuls = {
+	[SIDE_X] = .95,
+	[SIDE_Y] = .85,
+	[SIDE_Z] = .75
+}
+
 local fID = 0
 function LKVoxR.RenderActiveUniverse()
 	fID = fID + 1
@@ -298,6 +309,11 @@ function LKVoxR.RenderActiveUniverse()
 					bc = bc * .5
 				end
 			end
+
+			local mul = sideMuls[side]
+			rc = rc * mul
+			gc = gc * mul
+			bc = bc * mul
 
 			local lerpR = lerp(distDiv, rc, 64)
 			local lerpG = lerp(distDiv, gc, 128)

@@ -11,12 +11,12 @@ function LKVoxR.UpdateCamAng(dp, dy, dr)
 
 	local relaCheck = (LKVoxR.CamAngZ[3] + 180) % 360
 	--print(relaCheck, LKVoxR.CamAngZ[3])
-	if relaCheck < 90 then
-		LKVoxR.CamAngZ[3] = 270
+	if relaCheck <= 91 then
+		LKVoxR.CamAngZ[3] = 271
 	end
 
-	if relaCheck > 270 then
-		LKVoxR.CamAngZ[3] = 90
+	if relaCheck >= 269 then
+		LKVoxR.CamAngZ[3] = 89
 	end
 
 
@@ -55,7 +55,7 @@ function LKVoxR.PlayerController(dt)
 	end
 
 	if not grounded then
-		LKVoxR.PlayerVel[2] = LKVoxR.PlayerVel[2] - (dt * .25)
+		LKVoxR.PlayerVel[2] = LKVoxR.PlayerVel[2] - (dt * .6)
 	else
 		LKVoxR.PlayerVel[2] = 0
 		LKVoxR.PlayerPos[2] = hitPos[2]
@@ -63,7 +63,7 @@ function LKVoxR.PlayerController(dt)
 
 
 	if grounded and love.keyboard.isDown("space") then
-		LKVoxR.PlayerVel[2] = 0.15
+		LKVoxR.PlayerVel[2] = 0.2
 		LKVoxR.PlayerPos[2] = LKVoxR.PlayerPos[2] + .1
 	end
 
@@ -133,5 +133,5 @@ function LKVoxR.ToggleMouseGrab(key)
 		LKVoxR.InputLock = not love.mouse.isGrabbed()
 		love.mouse.setGrabbed(LKVoxR.InputLock)
 		love.mouse.setRelativeMode(LKVoxR.InputLock)
-   end
+	end
 end

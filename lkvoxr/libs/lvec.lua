@@ -29,6 +29,8 @@ local v_meta = {
     ["__mul"] = function(x, y)
         if tonumber(y) ~= nil then
             return LVEC.Vector(x[1] * y, x[2] * y, x[3] * y)
+        elseif tonumber(x) ~= nil then
+            return LVEC.Vector(y[1] * x, y[2] * x, y[3] * x)
         elseif y.ismatrix then
             local vx = (y[ 1] * x[1]) + (y[ 2] * x[2]) + (y[ 3] * x[3]) + (y[ 4] * x[4])
             local vy = (y[ 5] * x[1]) + (y[ 6] * x[2]) + (y[ 7] * x[3]) + (y[ 8] * x[4])

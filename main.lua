@@ -10,7 +10,7 @@ function love.update(dt)
 	CurTime = CurTime + dt
 
 	LKVoxR.PushUniverse(UnivTest)
-		LKVoxR.NoclipCam(dt)
+		--LKVoxR.NoclipCam(dt)
 		LKVoxR.DynScaleThink(dt)
 		LKVoxR.PlayerController(dt)
 	LKVoxR.PopUniverse()
@@ -25,6 +25,13 @@ function love.mousemoved(mx, my, dx, dy)
 end
 
 function love.mousepressed(x, y, button)
+	if LKVoxR.InputLock then
+		local w, h = love.graphics.getDimensions()
+		x = math.floor(w * .5)
+		y = math.floor(h * .5)
+	end
+
+
 	local dir = LKVoxR.ScreenToWorldDir(x, y)
 
 	LKVoxR.PushUniverse(UnivTest)
