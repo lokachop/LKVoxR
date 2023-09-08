@@ -1,11 +1,11 @@
 LKVoxR = LKVoxR or {}
+LKVoxR.LOVE_ACCEL = true
 
 
 
-
-local relaPath = "lkvoxr/"
+LKVoxR.RelaPath = "lkvoxr/"
 function LKVoxR.LoadFile(path)
-    require(relaPath .. path)
+    require(LKVoxR.RelaPath .. path)
 end
 
 LKVoxR.LoadFile("libs/lmat") -- make sure to load lmat first
@@ -28,3 +28,8 @@ LKVoxR.LoadFile("universes")
 LKVoxR.LoadFile("rendervoxel")
 LKVoxR.LoadFile("dynafps")
 LKVoxR.LoadFile("playercontroller")
+
+
+if love and LKVoxR.LOVE_ACCEL then
+    LKVoxR.LoadFile("loveaccel")
+end
