@@ -1,5 +1,5 @@
 LKVoxR = LKVoxR or {}
-LKVoxR.LOVE_ACCEL = true
+LKVoxR.LOVE_ACCEL = love and true
 
 
 
@@ -20,6 +20,11 @@ if (not Vector) or (not Matrix) or (not Angle) then -- hack hack
     Angle  = LANG.Angle
 end
 
+
+if LKVoxR.LOVE_ACCEL then
+    LKVoxR.LoadFile("loveaccel")
+end
+
 LKVoxR.LoadFile("consts")
 LKVoxR.LoadFile("camera")
 LKVoxR.LoadFile("voxels")
@@ -30,6 +35,6 @@ LKVoxR.LoadFile("dynafps")
 LKVoxR.LoadFile("playercontroller")
 
 
-if love and LKVoxR.LOVE_ACCEL then
-    LKVoxR.LoadFile("loveaccel")
+if LKVoxR.LOVE_ACCEL then
+    LKVoxR.LoadFile("loveaccel_post")
 end

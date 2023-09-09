@@ -270,7 +270,7 @@ function LKVoxR.RenderActiveUniverse()
 		if hit then
 			local voxNfo = LKVoxR.GetVoxelInfoFromID(voxID)
 
-			local tex = LKTEX.Textures[voxNfo.tex]
+			local tex = LKTEX.GetByName(voxNfo.tex)
 			local tdata = tex.data
 			local tw, th = tdata[1], tdata[2]
 

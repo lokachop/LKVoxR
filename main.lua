@@ -10,9 +10,9 @@ function love.update(dt)
 	CurTime = CurTime + dt
 
 	LKVoxR.PushUniverse(UnivTest)
-		LKVoxR.NoclipCam(dt)
+		--LKVoxR.NoclipCam(dt)
 		--LKVoxR.DynScaleThink(dt)
-		--LKVoxR.PlayerController(dt)
+		LKVoxR.PlayerController(dt)
 	LKVoxR.PopUniverse()
 end
 
@@ -66,4 +66,7 @@ function love.draw()
 	love.graphics.setBlendMode("alpha", "premultiplied")
 	love.graphics.setColor(1, 1, 1, 1)
 	love.graphics.draw(canvasTest, 0, 0)
+
+
+	LKVoxR.RenderAtlasDebug()
 end
