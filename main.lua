@@ -10,9 +10,9 @@ function love.update(dt)
 	CurTime = CurTime + dt
 
 	LKVoxR.PushUniverse(UnivTest)
-		LKVoxR.NoclipCam(dt)
+		--LKVoxR.NoclipCam(dt)
 		LKVoxR.DynScaleThink(dt)
-		--LKVoxR.PlayerController(dt)
+		LKVoxR.PlayerController(dt)
 	LKVoxR.PopUniverse()
 end
 

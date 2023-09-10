@@ -34,6 +34,7 @@ struct hitResult {
     vec3 pos;
     vec3 norm;
     int id;
+    float dist;
 };
 
 struct voxelQuery {
@@ -98,10 +99,12 @@ voxelQuery getVoxel(ivec3 p) {
         return voxelQuery(false, vec3(0.0, 0.0, 0.0), 0);
 }
 
+
 const float sideMul[4] = float[4](1.0, 0.95, 0.85, 0.75);
+const vec3 skyColour = vec3(0.250, 0.501, 0.768);
 
 
-vec3 textureFunc(vec3 norm, vec3 pos, vec3 rayDir, vec3 col, int side, int id) {
+vec3 textureFunc(vec3 norm, vec3 pos, vec3 rayDir, vec3 col, int side, int id, float dist) {
     /*
     vec3 lightDir = normalize(vec3(-1.0, 3.0, -1.0));
     float diffuseAttn = max(dot(norm, lightDir), 0.0);
@@ -150,9 +153,9 @@ vec3 textureFunc(vec3 norm, vec3 pos, vec3 rayDir, vec3 col, int side, int id) {
 
     float dotMul = -dot(norm, rayDir);
 
+    float distDiv = min(dist / (STEPS * 0.5), 1);
 
-    //vec4 cont = vec4(uv.x, uv.y, 0.0, 1.0);
-    return cont.xyz;// * max(dotMul, 0.0); // * (diffuseAttn*light*1.0 + specularAttn*light*0.6 + ambient);
+    return mix(cont.xyz, skyColour, distDiv);
 }
 
 hitResult intersectLK(vec3 rayPos, vec3 rayDir) {
@@ -231,13 +234,13 @@ hitResult intersectLK(vec3 rayPos, vec3 rayDir) {
             vec3 pos = (rayDir * perpWallDist);
             pos += rayPos;
 
-            return hitResult(true, textureFunc(norm, pos, rayDir, h.col, side, h.id), pos, norm, h.id);
+            return hitResult(true, textureFunc(norm, pos, rayDir, h.col, side, h.id, perpWallDist), pos, norm, h.id, perpWallDist);
         }
     }
 
 
 
-    return hitResult(false, vec3(0, 0, 0), vec3(0, 0, 0), vec3(0, 1, 0), 0);
+    return hitResult(false, vec3(0, 0, 0), vec3(0, 0, 0), vec3(0, 1, 0), 0, 1e32);
 }
 
 
@@ -268,57 +271,55 @@ mat4 viewMatrix(vec3 eye, vec3 center, vec3 up) {
 	);
 }
 
+const vec3 sunDir = normalize(vec3(1.5, 3.0, 1.0));
+
 vec4 effect(vec4 color, Image tex, vec2 textureCoords, vec2 screenCoords) {
-    /*
-    vec2 uv = screenCoords / screenSize.xy;
-    vec4 cont = Texel(chunkConts, vec3(uv.xy, indTestAdd));
-    cont.w = 1;
-
-    return cont;
-    */
-
 
     vec2 uv = screenCoords / screenSize.xy - 0.5;
 
     vec3 camDir = normalize(camLookAt - camPos);
-    //vec3 camRight = normalize(cross(camDir, worldUp));
-    //vec3 camUp = cross(camRight, camDir);
-    
-    //vec3 filmCentre = camPos + camDir*0.3;
-    //vec2 filmSize = vec2(1, screenSize.y / screenSize.x);
-    
-    //vec3 filmPos = filmCentre + uv.x*filmSize.x*camRight + uv.y*filmSize.y*camUp;
-    vec3 ro = camPos; //fract(camPos) - ivec3(renderDistHalf);
-
+    vec3 ro = camPos;
 
     mat4 matrixCam = viewMatrix(vec3(0, 0, 0), camDir, worldUp);
     vec3 scrDir = getDir(screenCoords, screenSize, uv).xzy;
     scrDir.x = -scrDir.x;
     scrDir.y = -scrDir.y;
-    //vec3 scrDir = rayDirection(camFOV * 1.6, screenSize, screenCoords);
+
     vec3 rd = (matrixCam * vec4(scrDir, 1.0)).xyz;
-
-    //vec3 rd = normalize(filmPos - camPos);
-
 
     hitResult data = intersectLK(ro, rd);
     if(data.didHit) {
-        vec3 lightDir = normalize(vec3(1.5, 3.0, 1.0));
         vec3 sunRayPos = data.pos + (data.norm * 0.0001);
 
-        hitResult sunRay = intersectLK(sunRayPos, lightDir);
+        hitResult sunRay = intersectLK(sunRayPos, sunDir);
+
+
+
         if(sunRay.didHit) {
-            return vec4(data.col * 0.25, 1.0);
-        } else {
-            return vec4(data.col, 1.0);
+            data.col *= 0.25;
         }
+
+
+
+        float distDiv = min(data.dist / (STEPS * 0.5), 1);
+        return vec4(mix(data.col, skyColour, distDiv), 1.0);
+        
+        //float dotVal = rd[1] + 1;
+        //vec3 colSky = vec3(32 + dotVal * 64, 48 + dotVal * 96, 64 + dotVal * 128);
+
+        //return vec4(mix(data.col, colSky / 255, distDiv), 1.0);
     } else {
         float dotVal = rd[1] + 1;
-		float colBR = 32 + dotVal * 64;
-		float colBG = 48 + dotVal * 96;
-		float colBB = 64 + dotVal * 128;
+
+        vec3 colSky = vec3(32 + dotVal * 64, 48 + dotVal * 96, 64 + dotVal * 128);
 
 
-        return vec4(colBR / 255, colBG / 255, colBB / 255, 1.0);
+        float dotSun = (max(dot(rd, sunDir) - 0.985, 0) * 100);
+        vec3 colSun = vec3(dotSun * 128, dotSun * 64, dotSun * 16);
+
+
+
+
+        return vec4((colSky + colSun) / 255, 1.0);
     }
 }

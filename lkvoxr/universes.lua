@@ -12,7 +12,7 @@ function LKVoxR.NewUniverse(tag)
         ["tag"] = tag
     }
 
-    local mapS = 4
+    local mapS = 2
     for x = -mapS, mapS do
         for y = -mapS, mapS do
             print("gen chunk; " .. x .. ", 0, " .. y)
