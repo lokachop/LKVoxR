@@ -271,14 +271,10 @@ local function initializeUniforms()
 end
 
 local _uniformInitTex = false
-function LKVoxR.RenderActiveUniverseAccel()
+function LKVoxR.RenderActiveUniverse()
 	if _lastW ~= LKVOXR_RENDER_RES_X or _lastH ~= LKVOXR_RENDER_RES_Y then
 		updateCanvas()
 	end
-
-	--updateVolumeImage()
-
-	local w, h = love.graphics.getDimensions()
 
 	local eyeDir = Vector(1, 0, 0)
 	eyeDir:Rotate(LKVoxR.CamAngZ)
@@ -286,40 +282,27 @@ function LKVoxR.RenderActiveUniverseAccel()
 
 
 	local camPos = LKVoxR.CamPos * 1
-	love.graphics.setShader(LKVoxR._loveShader)
 
+	love.graphics.setCanvas(LKVoxR._loveCanvas)
+	love.graphics.setShader(LKVoxR._loveShader)
 	if not _uniformInit then
 		initializeUniforms()
 	end
-
-
 	sendIfExist("camPos", {camPos[1], camPos[2], camPos[3]})
 	sendIfExist("camLookAt", {camPos[1] + eyeDir[1], camPos[2] + eyeDir[2], camPos[3] + eyeDir[3]})
-	sendIfExist("screenSize", {w, h})
-
+	sendIfExist("screenSize", {LKVOXR_RENDER_RES_X, LKVOXR_RENDER_RES_Y})
 
 	updateChunkLists()
 
-	love.graphics.draw(LKVoxR._loveCanvas, 0, 0, 0, w, h)
+	love.graphics.setColor(1, 1, 1, 1)
+	love.graphics.rectangle("fill", 0, 0, LKVOXR_RENDER_RES_X, LKVOXR_RENDER_RES_Y)
 	love.graphics.setShader()
+	love.graphics.setCanvas()
 
 
-	--[[
-	love.graphics.setShader()
-	for z = 1, 16 do
-		local imgData = chunkCurr._volMap:newImageData(z)
-		local img = love.graphics.newImage(imgData)
-		img:setFilter("nearest", "nearest", 0)
+	local w, h = love.graphics.getDimensions()
+	local wRatio, hRatio = w / LKVOXR_RENDER_RES_X, h / LKVOXR_RENDER_RES_Y
 
-
-		local _scl = 2
-		local xc = (z - 1) * (LKVOXR_SHADER_RENDER_DIST * 2)
-		love.graphics.setColor(0.2, 0.4, 0.6, 1)
-		love.graphics.rectangle("fill", xc * _scl, 0, LKVOXR_SHADER_VOLTEX_X * _scl, LKVOXR_SHADER_VOLTEX_Y * _scl)
-
-
-		love.graphics.setColor(1, 1, 1, 1)
-		love.graphics.draw(img, xc * _scl, 0, 0, _scl, _scl)
-	end
-	]]--
+	love.graphics.setColor(1, 1, 1, 1)
+	love.graphics.draw(LKVoxR._loveCanvas, 0, 0, 0, wRatio, hRatio)
 end

@@ -10,9 +10,9 @@ function love.update(dt)
 	CurTime = CurTime + dt
 
 	LKVoxR.PushUniverse(UnivTest)
-		--LKVoxR.NoclipCam(dt)
-		--LKVoxR.DynScaleThink(dt)
-		LKVoxR.PlayerController(dt)
+		LKVoxR.NoclipCam(dt)
+		LKVoxR.DynScaleThink(dt)
+		--LKVoxR.PlayerController(dt)
 	LKVoxR.PopUniverse()
 end
 
@@ -56,8 +56,8 @@ function love.draw()
 	love.graphics.setCanvas(canvasTest)
 	love.graphics.setBlendMode("alpha")
 		LKVoxR.PushUniverse(UnivTest)
-			LKVoxR.RenderActiveUniverseAccel()
-			--LKVoxR.RenderActiveUniverse()
+			--LKVoxR.RenderActiveUniverseAccel()
+			LKVoxR.RenderActiveUniverse()
 		LKVoxR.PopUniverse()
 	love.graphics.setCanvas()
 
@@ -74,7 +74,4 @@ function love.draw()
 
 	love.graphics.setColor(1, 1, 1, 1)
 	love.graphics.circle("fill", w * .5, h * .5, 2)
-
-
-	LKVoxR.RenderAtlasDebug()
 end

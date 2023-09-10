@@ -12,9 +12,10 @@ function LKVoxR.NewUniverse(tag)
         ["tag"] = tag
     }
 
-    local mapS = 2
+    local mapS = 4
     for x = -mapS, mapS do
         for y = -mapS, mapS do
+            print("gen chunk; " .. x .. ", 0, " .. y)
             worldData["chunks"][LKVoxR.ChunkHash(x, 0, y)] = LKVoxR.NewChunk(x, 0, y)
         end
     end
@@ -25,7 +26,10 @@ function LKVoxR.NewUniverse(tag)
     return LKVoxR.UniverseRegistry[tag]
 end
 
-LKVoxR.BaseUniv = LKVoxR.NewUniverse("lkvoxr_base")
+LKVoxR.BaseUniv = {
+        ["chunks"] = {},
+        ["tag"] = "lkvoxr_base"
+    }
 
 LKVoxR.CurrUniv = LKVoxR.BaseUniv
 LKVoxR.UniverseStack = LKVoxR.UniverseStack or {}

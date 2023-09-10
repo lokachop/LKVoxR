@@ -63,7 +63,7 @@ function LKVoxR.PlayerController(dt)
 
 
 	if grounded and love.keyboard.isDown("space") then
-		LKVoxR.PlayerVel[2] = 0.2
+		LKVoxR.PlayerVel[2] = 0.25
 		LKVoxR.PlayerPos[2] = LKVoxR.PlayerPos[2] + .1
 	end
 
