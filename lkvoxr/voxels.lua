@@ -35,12 +35,6 @@ function LKVoxR.GetVoxelCount()
     return _voxelCount
 end
 
-
-LKVoxR.NewVoxel("test5", {
-    tex = "jet",
-    solid = true,
-})
-
 LKVoxR.NewVoxel("test1", {
     tex = "jelly",
     solid = true,
@@ -61,4 +55,3 @@ LKVoxR.NewVoxel("test4", {
     tex = "jet",
     solid = true,
 })
-

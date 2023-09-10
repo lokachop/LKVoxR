@@ -40,7 +40,7 @@ local sw, sh = love.graphics.getDimensions()
 local drawW, drawH = sw / LKVOXR_RENDER_RES_X, sh / LKVOXR_RENDER_RES_Y
 
 local function drawPixel(r, g, b, x, y)
-	love.graphics.setColor(r / 255, g / 255, b / 255, .5)
+	love.graphics.setColor(r / 255, g / 255, b / 255)
 	love.graphics.rectangle("fill", x * drawW, y * drawH, drawW, drawH)
 end
 
@@ -269,8 +269,11 @@ function LKVoxR.RenderActiveUniverse()
 
 		if hit then
 			local voxNfo = LKVoxR.GetVoxelInfoFromID(voxID)
-
 			local tex = LKTEX.GetByName(voxNfo.tex)
+
+			--print(voxNfo.name, voxNfo.tex)
+
+
 			local tdata = tex.data
 			local tw, th = tdata[1], tdata[2]
 
@@ -320,7 +323,7 @@ function LKVoxR.RenderActiveUniverse()
 			local lerpB = lerp(distDiv, bc, 196)
 
 
-			love.graphics.setColor(lerpR * .0039, lerpG * .0039, lerpB * .0039, .5)
+			love.graphics.setColor(lerpR * .0039, lerpG * .0039, lerpB * .0039)
 			love.graphics.rectangle("fill", xc * drawW, yc * drawH, drawW, drawH)
 		else
 			local dotVal = dirGet[2] + 1

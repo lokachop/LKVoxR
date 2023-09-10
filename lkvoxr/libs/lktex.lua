@@ -136,7 +136,7 @@ function LKTEX.LoadPPM(name, path)
 end
 
 function LKTEX.GetByName(name)
-    return LKTEX.Textures[_nameLUT[name] or 1]
+    return LKTEX.Textures[_nameLUT[name]]
 end
 
 function LKTEX.GetByIndex(idx)

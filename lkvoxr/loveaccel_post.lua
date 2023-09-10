@@ -168,8 +168,6 @@ function LKVoxR.GenerateTextureAtlas()
 	end
 
 	love.graphics.setCanvas()
-
-	love.graphics.draw(LKVoxR._loveTexAtlas, 0, 0, 0, 1)
 end
 
 
@@ -180,14 +178,18 @@ end
 
 
 local _voxelTextureIndices = {}
+local _voxelAtlasOffsets = {}
+local _voxelAtlasSizes = {}
 function LKVoxR.GenerateVoxelTextureIndices()
 	for i = 1, LKVoxR.GetVoxelCount() do
 		local vox = LKVoxR.Voxels[i]
-
-
 		local texInd = _textureIndicesName[vox.tex]
-		print("(" .. vox.name .. "): " .. vox.tex .. " = " .. texInd .. "[" .. _textureIndices[texInd] .. "]")
-		_voxelTextureIndices[i] = texInd
+		print("[" .. vox.name .. "]: " .. vox.tex .. ": " .. LKTEX.GetNameByIndex(texInd))
+
+		local ioff = _textureAtlasOffsets[texInd]
+		local isiz = _textureAtlasSizes[texInd]
+		_voxelAtlasOffsets[i] = {ioff[1], ioff[2]}
+		_voxelAtlasSizes[i] = {isiz[1], isiz[2]}
 	end
 end
 
@@ -259,10 +261,10 @@ local function initializeUniforms()
 	sendIfExist("screenSize", {w, h})
 	sendIfExist("camFOV", LKVOXR_FOV)
 
-	sendIfExist("texAtlasUVs", unpack(_textureAtlasOffsets))
+	sendIfExist("texAtlasUVs", unpack(_voxelAtlasOffsets))
 	sendIfExist("texAtlasSize", {atlas_size, atlas_size})
-	sendIfExist("texAtlasSizes", unpack(_textureAtlasSizes))
-	sendIfExist("voxIDToTexLUT", unpack(_voxelTextureIndices))
+	sendIfExist("texAtlasSizes", unpack(_voxelAtlasSizes))
+	--sendIfExist("voxIDToTexLUT", unpack(_voxelTextureIndices))
 	sendIfExist("texAtlas", LKVoxR._loveTexAtlas)
 
 	_uniformInit = true

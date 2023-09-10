@@ -22,18 +22,6 @@ const int STEPS = 96;
 const vec3 worldUp = vec3(0.0, -1.0, 0.0);
 
 
-mat4 viewMatrix(vec3 eye, vec3 center, vec3 up) {
-	vec3 f = normalize(center - eye);
-	vec3 s = normalize(cross(f, up));
-	vec3 u = cross(s, f);
-	return mat4(
-		vec4(s, 0.0),
-		vec4(u, 0.0),
-		vec4(-f, 0.0),
-		vec4(0.0, 0.0, 0.0, 1)
-	);
-}
-
 struct hit {
     bool didHit;
     vec3 col;
@@ -125,10 +113,10 @@ vec3 textureFunc(vec3 norm, vec3 pos, vec3 rayDir, vec3 col, int side, int id) {
     float specularAttn = max(dot(reflected, lightDir), 0.0);
     */
 
-    int texID = voxIDToTexLUT[id];
+    //int texID = voxIDToTexLUT[id];
     
-    ivec2 texSize = texAtlasSizes[texID];
-    vec2 texOffset = texAtlasUVs[texID];
+    ivec2 texSize = ivec2(texAtlasSizes[id - 1]);
+    vec2 texOffset = vec2(texAtlasUVs[id - 1]);
 
 
 
@@ -253,6 +241,33 @@ hitResult intersectLK(vec3 rayPos, vec3 rayDir) {
 }
 
 
+vec3 getDir(vec2 screenCords, vec2 screenSize, vec2 uv) {
+    float coeff = tan((camFOV / 2) * (3.1416 / 180)) * 2.71828;
+	return normalize(vec3(
+        ((screenSize.x - screenCords.x) / (screenSize.x - 1) - 0.5) * coeff,
+        -1,
+		(coeff / screenSize.x) * (screenSize.y - screenCords.y) - 0.5 * (coeff / screenSize.x) * (screenSize.y - 1)
+	));
+}
+
+vec3 rayDirection(float fieldOfView, vec2 size, vec2 fragCoord) {
+    vec2 xy = fragCoord - size / 2.0;
+    float z = size.y / tan(radians(fieldOfView) / 2.0);
+    return normalize(vec3(xy, -z));
+}
+
+mat4 viewMatrix(vec3 eye, vec3 center, vec3 up) {
+	vec3 f = normalize(center - eye);
+	vec3 s = normalize(cross(f, up));
+	vec3 u = cross(s, f);
+	return mat4(
+		vec4(s, 0.0),
+		vec4(u, 0.0),
+		vec4(-f, 0.0),
+		vec4(0.0, 0.0, 0.0, 1)
+	);
+}
+
 vec4 effect(vec4 color, Image tex, vec2 textureCoords, vec2 screenCoords) {
     /*
     vec2 uv = screenCoords / screenSize.xy;
@@ -266,15 +281,24 @@ vec4 effect(vec4 color, Image tex, vec2 textureCoords, vec2 screenCoords) {
     vec2 uv = screenCoords / screenSize.xy - 0.5;
 
     vec3 camDir = normalize(camLookAt - camPos);
-    vec3 camRight = normalize(cross(camDir, worldUp));
-    vec3 camUp = cross(camRight, camDir);
+    //vec3 camRight = normalize(cross(camDir, worldUp));
+    //vec3 camUp = cross(camRight, camDir);
     
-    vec3 filmCentre = camPos + camDir*0.3;
-    vec2 filmSize = vec2(1, screenSize.y / screenSize.x);
+    //vec3 filmCentre = camPos + camDir*0.3;
+    //vec2 filmSize = vec2(1, screenSize.y / screenSize.x);
     
-    vec3 filmPos = filmCentre + uv.x*filmSize.x*camRight + uv.y*filmSize.y*camUp;
+    //vec3 filmPos = filmCentre + uv.x*filmSize.x*camRight + uv.y*filmSize.y*camUp;
     vec3 ro = camPos; //fract(camPos) - ivec3(renderDistHalf);
-    vec3 rd = normalize(filmPos - camPos);
+
+
+    mat4 matrixCam = viewMatrix(vec3(0, 0, 0), camDir, worldUp);
+    vec3 scrDir = getDir(screenCoords, screenSize, uv).xzy;
+    scrDir.x = -scrDir.x;
+    scrDir.y = -scrDir.y;
+    //vec3 scrDir = rayDirection(camFOV * 1.6, screenSize, screenCoords);
+    vec3 rd = (matrixCam * vec4(scrDir, 1.0)).xyz;
+
+    //vec3 rd = normalize(filmPos - camPos);
 
 
     hitResult data = intersectLK(ro, rd);
