@@ -68,10 +68,13 @@ function love.draw()
 	love.graphics.draw(canvasTest, 0, 0)
 
 
+
 	local w, h = love.graphics.getDimensions()
 	love.graphics.setColor(0, 0, 0, 1)
 	love.graphics.circle("fill", w * .5, h * .5, 3)
 
 	love.graphics.setColor(1, 1, 1, 1)
 	love.graphics.circle("fill", w * .5, h * .5, 2)
+
+	--LKVoxR.DrawCloudCanvasTest()
 end

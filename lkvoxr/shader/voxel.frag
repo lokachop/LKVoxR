@@ -1,3 +1,15 @@
+uniform float time;
+uniform int steps;
+
+uniform bool doFog;
+uniform vec3 fogColour;
+
+uniform bool doBlockShade;
+uniform float blockShadeList[4];
+
+uniform bool doShadows;
+uniform vec3 shadowDir;
+
 
 uniform vec3 camPos;
 uniform vec3 camLookAt;
@@ -14,11 +26,12 @@ uniform int chunkCount;
 
 uniform Image texAtlas;
 uniform vec2 texAtlasSize;
-uniform vec2 texAtlasUVs[32];
-uniform ivec2 texAtlasSizes[32];
-uniform int voxIDToTexLUT[32];
+uniform vec2 texAtlasUVs[48];
+uniform ivec2 texAtlasSizes[48];
 
-const int STEPS = 96;
+uniform Image texCloud;
+uniform int texCloudSz;
+
 const vec3 worldUp = vec3(0.0, -1.0, 0.0);
 
 
@@ -42,6 +55,12 @@ struct voxelQuery {
     vec3 col;
     int id;
 };
+
+struct planeIntersectResult {
+    bool didHit;
+    vec3 pos;
+};
+
 
 
 bool inrange(int v, int minv, int maxv) {
@@ -99,11 +118,6 @@ voxelQuery getVoxel(ivec3 p) {
         return voxelQuery(false, vec3(0.0, 0.0, 0.0), 0);
 }
 
-
-const float sideMul[4] = float[4](1.0, 0.95, 0.85, 0.75);
-const vec3 skyColour = vec3(0.250, 0.501, 0.768);
-
-
 vec3 textureFunc(vec3 norm, vec3 pos, vec3 rayDir, vec3 col, int side, int id, float dist) {
     /*
     vec3 lightDir = normalize(vec3(-1.0, 3.0, -1.0));
@@ -149,13 +163,9 @@ vec3 textureFunc(vec3 norm, vec3 pos, vec3 rayDir, vec3 col, int side, int id, f
     vec2 texCoord = texOffset + (uv * texSize);
     vec4 cont = Texel(texAtlas, texCoord / texAtlasSize);
 
-    cont = cont * sideMul[side];
+    cont *= doBlockShade ? blockShadeList[side] : 1;
 
-    float dotMul = -dot(norm, rayDir);
-
-    float distDiv = min(dist / (STEPS * 0.5), 1);
-
-    return mix(cont.xyz, skyColour, distDiv);
+    return cont.xyz;
 }
 
 hitResult intersectLK(vec3 rayPos, vec3 rayDir) {
@@ -192,7 +202,7 @@ hitResult intersectLK(vec3 rayPos, vec3 rayDir) {
 	}
 
     int side;
-    for (int i = 0; i < STEPS; i++) {
+    for (int i = 0; i < steps; i++) {
         if (sideDist.x < sideDist.y) {
             if (sideDist.x < sideDist.z) {
                 sideDist.x += deltaDist.x;
@@ -234,11 +244,11 @@ hitResult intersectLK(vec3 rayPos, vec3 rayDir) {
             vec3 pos = (rayDir * perpWallDist);
             pos += rayPos;
 
+            float dist = distance(rayPos, pos);
+
             return hitResult(true, textureFunc(norm, pos, rayDir, h.col, side, h.id, perpWallDist), pos, norm, h.id, perpWallDist);
         }
     }
-
-
 
     return hitResult(false, vec3(0, 0, 0), vec3(0, 0, 0), vec3(0, 1, 0), 0, 1e32);
 }
@@ -271,7 +281,21 @@ mat4 viewMatrix(vec3 eye, vec3 center, vec3 up) {
 	);
 }
 
-const vec3 sunDir = normalize(vec3(1.5, 3.0, 1.0));
+
+// https://discourse.vvvv.org/t/infinite-ray-intersects-with-infinite-plane/10537
+planeIntersectResult IntersectRayPlane(vec3 rayOrigin, vec3 rayDirection, vec3 posOnPlane, vec3 planeNormal) {
+  float rDotn = dot(rayDirection, planeNormal);
+
+  //parallel to plane or pointing away from plane?
+  if (rDotn < 0.0000001 )
+    return planeIntersectResult(false, vec3(0, 0, 0));
+ 
+  float s = dot(planeNormal, (posOnPlane - rayOrigin)) / rDotn;
+	
+  vec3 intersectionPoint = rayOrigin + s * rayDirection;
+
+  return planeIntersectResult(true, intersectionPoint);
+}
 
 vec4 effect(vec4 color, Image tex, vec2 textureCoords, vec2 screenCoords) {
 
@@ -287,39 +311,67 @@ vec4 effect(vec4 color, Image tex, vec2 textureCoords, vec2 screenCoords) {
 
     vec3 rd = (matrixCam * vec4(scrDir, 1.0)).xyz;
 
+
+
+
+    vec3 albedo = vec3(0, 0, 0);
     hitResult data = intersectLK(ro, rd);
     if(data.didHit) {
-        vec3 sunRayPos = data.pos + (data.norm * 0.0001);
 
-        hitResult sunRay = intersectLK(sunRayPos, sunDir);
-
-
-
-        if(sunRay.didHit) {
-            data.col *= 0.25;
+        if(doShadows) {
+            vec3 sunRayPos = data.pos + (data.norm * 0.0001);
+            hitResult sunRay = intersectLK(sunRayPos, shadowDir);
+            data.col *= sunRay.didHit ? 0.25 : 1;
         }
 
 
+        vec3 camDirInv = vec3(camDir);
+        mat4 matrixCamInv = viewMatrix(vec3(0, 0, 0), camDirInv, worldUp);
 
-        float distDiv = min(data.dist / (STEPS * 0.5), 1);
-        return vec4(mix(data.col, skyColour, distDiv), 1.0);
-        
-        //float dotVal = rd[1] + 1;
-        //vec3 colSky = vec3(32 + dotVal * 64, 48 + dotVal * 96, 64 + dotVal * 128);
 
-        //return vec4(mix(data.col, colSky / 255, distDiv), 1.0);
+        if(doFog) {
+            float distDiv = min(data.dist / (steps * 0.5), 1);
+            data.col = mix(data.col, fogColour, distDiv);
+        }
+
+        return vec4(data.col, 1.0);
     } else {
-        float dotVal = rd[1] + 1;
 
+        float dotVal = rd[1] + 1;
         vec3 colSky = vec3(32 + dotVal * 64, 48 + dotVal * 96, 64 + dotVal * 128);
 
 
-        float dotSun = (max(dot(rd, sunDir) - 0.985, 0) * 100);
+        float dotSun = (max(dot(rd, shadowDir) - 0.985, 0) * 100);
         vec3 colSun = vec3(dotSun * 128, dotSun * 64, dotSun * 16);
 
 
+        vec3 posPlane = vec3(-ro.x, -ro.y, -ro.z);
+        int normAxis = ro.y - 128 > 0 ? -1 : 1;
+        planeIntersectResult skyIntersect = IntersectRayPlane(posPlane, rd, vec3(0, -128, 0), vec3(0, normAxis, 0));
 
 
+        vec3 colCombined = (colSky + colSun) / 255;
+        if(skyIntersect.didHit) {
+            vec2 texUV = skyIntersect.pos.xz / 256;
+
+            vec4 contCloud = Texel(texCloud, texUV + vec2(time * 0.025, time * 0.0425));
+            float cloudIntensity = contCloud.r;
+
+            vec3 preFinalCloudCol = mix(colCombined, contCloud.xyz, cloudIntensity);
+
+
+            if(doFog) {
+                float dist = distance(skyIntersect.pos, ro) / 16;
+                float distDiv = min(dist / (steps * 0.5), 1);
+
+                preFinalCloudCol = mix(preFinalCloudCol, colCombined, distDiv);
+            }
+
+
+
+            return vec4(preFinalCloudCol, 1.0);
+        }
+        
         return vec4((colSky + colSun) / 255, 1.0);
     }
 }

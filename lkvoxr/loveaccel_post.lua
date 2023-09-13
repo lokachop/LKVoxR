@@ -255,6 +255,59 @@ local function updateChunkLists()
 	sendIfExist("chunkSizeLarge", {LKVOXR_CX_P, LKVOXR_CY_P, LKVOXR_CZ_P})
 end
 
+
+
+local cloudSz = 512
+local canvasClouds = love.graphics.newCanvas(cloudSz, cloudSz)
+canvasClouds:setWrap("mirroredrepeat")
+local function initializeCloudTexture()
+	-- use noise to gen it
+	local _oldCanvas = love.graphics.getCanvas()
+	local _oldShader = love.graphics.getShader()
+
+	love.graphics.setShader()
+	love.graphics.setCanvas(canvasClouds)
+	for i = 0, (cloudSz * cloudSz) - 1 do
+		local xc = i % cloudSz
+		local yc = math.floor(i / cloudSz)
+
+		local xd = xc / cloudSz
+		local yd = yc / cloudSz
+
+		local spxVal1 = (LKNoise.Simplex.simplex2D(xd * 1, yd * 1) + 1) * .5
+		local spxVal2 = (LKNoise.Simplex.simplex2D(xd * 4, yd * 4) + 1) * .5
+		local spxVal3 = (LKNoise.Simplex.simplex2D(xd * 6, yd * 6) + 1) * .5
+
+		local colVal = (spxVal1 * .85) + (spxVal2 * .10) + (spxVal3 * .5)
+
+		love.graphics.setColor(colVal, colVal, colVal, 1)
+		love.graphics.rectangle("fill", xc, yc, 1, 1)
+	end
+	love.graphics.setCanvas(_oldCanvas)
+	love.graphics.setShader(_oldShader)
+end
+
+
+function LKVoxR.DrawCloudCanvasTest()
+	local scl = 1
+	love.graphics.draw(canvasClouds, 0, 0, 0, scl)
+end
+
+local function initializeConfigs()
+	sendIfExist("steps", LKVOXR_TRACE_STEPS)
+
+	sendIfExist("doFog", LKVOXR_DO_FOG)
+	sendIfExist("fogColour", {LKVOXR_FOG_COLOUR[1] / 255, LKVOXR_FOG_COLOUR[2] / 255, LKVOXR_FOG_COLOUR[3] / 255})
+
+	sendIfExist("doBlockShade", LKVOXR_DO_BLOCK_SHADE)
+	sendIfExist("blockShadeList", 1, LKVOXR_SIDE_MULS[1], LKVOXR_SIDE_MULS[2], LKVOXR_SIDE_MULS[3])
+
+	sendIfExist("doShadows", LKVOXR_DO_SHADOWS)
+	sendIfExist("shadowDir", LKVOXR_SUN_DIR)
+end
+
+
+
 local _uniformInit = false
 local function initializeUniforms()
 	local w, h = love.graphics.getDimensions()
@@ -264,11 +317,21 @@ local function initializeUniforms()
 	sendIfExist("texAtlasUVs", unpack(_voxelAtlasOffsets))
 	sendIfExist("texAtlasSize", {atlas_size, atlas_size})
 	sendIfExist("texAtlasSizes", unpack(_voxelAtlasSizes))
-	--sendIfExist("voxIDToTexLUT", unpack(_voxelTextureIndices))
 	sendIfExist("texAtlas", LKVoxR._loveTexAtlas)
+
+	initializeCloudTexture()
+	sendIfExist("texCloud", canvasClouds)
+	sendIfExist("texCloudSz", cloudSz)
+
+	initializeConfigs()
 
 	_uniformInit = true
 end
+
+
+
+
+
 
 local _uniformInitTex = false
 function LKVoxR.RenderActiveUniverse()
@@ -283,11 +346,15 @@ function LKVoxR.RenderActiveUniverse()
 
 	local camPos = LKVoxR.CamPos * 1
 
+	local oldCanvas = love.graphics.getCanvas()
 	love.graphics.setCanvas(LKVoxR._loveCanvas)
 	love.graphics.setShader(LKVoxR._loveShader)
 	if not _uniformInit then
 		initializeUniforms()
 	end
+	sendIfExist("time", CurTime)
+
+
 	sendIfExist("camPos", {camPos[1], camPos[2], camPos[3]})
 	sendIfExist("camLookAt", {camPos[1] + eyeDir[1], camPos[2] + eyeDir[2], camPos[3] + eyeDir[3]})
 	sendIfExist("screenSize", {LKVOXR_RENDER_RES_X, LKVOXR_RENDER_RES_Y})
@@ -297,7 +364,7 @@ function LKVoxR.RenderActiveUniverse()
 	love.graphics.setColor(1, 1, 1, 1)
 	love.graphics.rectangle("fill", 0, 0, LKVOXR_RENDER_RES_X, LKVOXR_RENDER_RES_Y)
 	love.graphics.setShader()
-	love.graphics.setCanvas()
+	love.graphics.setCanvas(oldCanvas)
 
 
 	local w, h = love.graphics.getDimensions()

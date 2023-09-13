@@ -65,9 +65,9 @@ function LKVoxR.ChangeResolution(newW, newH)
 	calculateForward()
 end
 
-local SIDE_X = 0
-local SIDE_Y = 1
-local SIDE_Z = 2
+local SIDE_X = 1
+local SIDE_Y = 2
+local SIDE_Z = 3
 
 local tblConcatHash = {
 	[1] = "x",
@@ -228,16 +228,13 @@ local function lerp(t, a, b)
 end
 
 local doShadows = LKVOXR_DO_SHADOWS
-local sunDirTest = Vector(5, 3, 2)
-sunDirTest:Normalize()
+local sunDir = LKVOXR_SUN_DIR
 
 
-local sideMuls = {
-	[SIDE_X] = .95,
-	[SIDE_Y] = .85,
-	[SIDE_Z] = .75
-}
+local sideMuls = LKVOXR_SIDE_MULS
 
+local doFog = LKVOXR_DO_FOG
+local fogCr, fogCg, fogCb = LKVOXR_FOG_COLOUR[1], LKVOXR_FOG_COLOUR[2], LKVOXR_FOG_COLOUR[3]
 local fID = 0
 function LKVoxR.RenderActiveUniverse()
 	fID = fID + 1
@@ -305,7 +302,7 @@ function LKVoxR.RenderActiveUniverse()
 			end
 
 			if doShadows then
-				local shadowHit = LKVoxR.RaycastWorld(hitPos + (hitNormal * 0.001), sunDirTest)
+				local shadowHit = LKVoxR.RaycastWorld(hitPos + (hitNormal * 0.001), sunDir)
 				if shadowHit then
 					rc = rc * .5
 					gc = gc * .5
@@ -313,17 +310,21 @@ function LKVoxR.RenderActiveUniverse()
 				end
 			end
 
-			local mul = sideMuls[side]
-			rc = rc * mul
-			gc = gc * mul
-			bc = bc * mul
+			if LKVOXR_DO_BLOCK_SHADE then
+				local mul = sideMuls[side]
+				rc = rc * mul
+				gc = gc * mul
+				bc = bc * mul
+			end
 
-			local lerpR = lerp(distDiv, rc, 64)
-			local lerpG = lerp(distDiv, gc, 128)
-			local lerpB = lerp(distDiv, bc, 196)
+			if doFog then
+				rc = lerp(distDiv, rc, fogCr)
+				gc = lerp(distDiv, gc, fogCg)
+				bc = lerp(distDiv, bc, fogCb)
+			end
 
 
-			love.graphics.setColor(lerpR * .0039, lerpG * .0039, lerpB * .0039)
+			love.graphics.setColor(rc * .0039, gc * .0039, bc * .0039)
 			love.graphics.rectangle("fill", xc * drawW, yc * drawH, drawW, drawH)
 		else
 			local dotVal = dirGet[2] + 1

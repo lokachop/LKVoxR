@@ -168,6 +168,9 @@ local function smoothstep(t, a, b)
 	return a + (b - a) * (t * t * t * (t * (t * 6 - 15) + 10))
 end
 
+local function Lerp(t, a, b)
+	return a * (1 - t) + b * t
+end
 
 function LKNoise.Perlin.perlin(x, y, seed)
 	local x0, y0 = math.floor(x), math.floor(y)

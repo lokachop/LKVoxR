@@ -1,0 +1,1 @@
+LKVoxR = LKVoxR or {}

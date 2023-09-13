@@ -33,6 +33,7 @@ LKVoxR.LoadFile("universes")
 LKVoxR.LoadFile("rendervoxel")
 LKVoxR.LoadFile("dynafps")
 LKVoxR.LoadFile("playercontroller")
+LKVoxR.LoadFile("prefabs")
 
 
 if LKVoxR.LOVE_ACCEL then
