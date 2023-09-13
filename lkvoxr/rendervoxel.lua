@@ -222,19 +222,20 @@ end
 
 
 local _up = Vector(0, 1, 0)
-local _halfSteps = (LKVOXR_TRACE_STEPS * .7)
+local _halfSteps = (LKVOXR_TRACE_STEPS * .5)
 local function lerp(t, a, b)
 	return a * (1 - t) + b * t
 end
 
 local doShadows = LKVOXR_DO_SHADOWS
 local sunDir = LKVOXR_SUN_DIR
-
+local shadowMul = LKVOXR_SHADOW_MUL
 
 local sideMuls = LKVOXR_SIDE_MULS
 
 local doFog = LKVOXR_DO_FOG
 local fogCr, fogCg, fogCb = LKVOXR_FOG_COLOUR[1], LKVOXR_FOG_COLOUR[2], LKVOXR_FOG_COLOUR[3]
+
 local fID = 0
 function LKVoxR.RenderActiveUniverse()
 	fID = fID + 1
@@ -304,9 +305,9 @@ function LKVoxR.RenderActiveUniverse()
 			if doShadows then
 				local shadowHit = LKVoxR.RaycastWorld(hitPos + (hitNormal * 0.001), sunDir)
 				if shadowHit then
-					rc = rc * .5
-					gc = gc * .5
-					bc = bc * .5
+					rc = rc * shadowMul
+					gc = gc * shadowMul
+					bc = bc * shadowMul
 				end
 			end
 

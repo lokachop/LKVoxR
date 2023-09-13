@@ -26,6 +26,7 @@ LKVOXR_SIDE_MULS = {.95, .85, .75} -- x, y, z shade muls
 LKVOXR_DO_SHADOWS = true
 LKVOXR_SUN_DIR = Vector(5, 3, 2)
 LKVOXR_SUN_DIR:Normalize()
+LKVOXR_SHADOW_MUL = .25
 
 
 

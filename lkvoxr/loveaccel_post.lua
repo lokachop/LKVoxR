@@ -274,11 +274,11 @@ local function initializeCloudTexture()
 		local xd = xc / cloudSz
 		local yd = yc / cloudSz
 
-		local spxVal1 = (LKNoise.Simplex.simplex2D(xd * 1, yd * 1) + 1) * .5
+		local spxVal1 = (LKNoise.Simplex.simplex2D(xd * 2, yd * 2) + 1) * .5
 		local spxVal2 = (LKNoise.Simplex.simplex2D(xd * 4, yd * 4) + 1) * .5
 		local spxVal3 = (LKNoise.Simplex.simplex2D(xd * 6, yd * 6) + 1) * .5
 
-		local colVal = (spxVal1 * .85) + (spxVal2 * .10) + (spxVal3 * .5)
+		local colVal = ((spxVal1 * .65) + (spxVal2 * .10) + (spxVal3 * .25)) * 1.25
 
 		love.graphics.setColor(colVal, colVal, colVal, 1)
 		love.graphics.rectangle("fill", xc, yc, 1, 1)
@@ -304,6 +304,7 @@ local function initializeConfigs()
 
 	sendIfExist("doShadows", LKVOXR_DO_SHADOWS)
 	sendIfExist("shadowDir", LKVOXR_SUN_DIR)
+	sendIfExist("shadowMul", LKVOXR_SHADOW_MUL)
 end
 
 
@@ -363,6 +364,7 @@ function LKVoxR.RenderActiveUniverse()
 
 	love.graphics.setColor(1, 1, 1, 1)
 	love.graphics.rectangle("fill", 0, 0, LKVOXR_RENDER_RES_X, LKVOXR_RENDER_RES_Y)
+
 	love.graphics.setShader()
 	love.graphics.setCanvas(oldCanvas)
 

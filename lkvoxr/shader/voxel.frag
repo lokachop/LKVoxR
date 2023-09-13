@@ -9,7 +9,7 @@ uniform float blockShadeList[4];
 
 uniform bool doShadows;
 uniform vec3 shadowDir;
-
+uniform float shadowMul;
 
 uniform vec3 camPos;
 uniform vec3 camLookAt;
@@ -321,7 +321,7 @@ vec4 effect(vec4 color, Image tex, vec2 textureCoords, vec2 screenCoords) {
         if(doShadows) {
             vec3 sunRayPos = data.pos + (data.norm * 0.0001);
             hitResult sunRay = intersectLK(sunRayPos, shadowDir);
-            data.col *= sunRay.didHit ? 0.25 : 1;
+            data.col *= sunRay.didHit ? shadowMul : 1;
         }
 
 
