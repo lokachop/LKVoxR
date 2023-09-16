@@ -66,7 +66,7 @@ function love.draw()
 	love.graphics.setBlendMode("alpha", "premultiplied")
 	love.graphics.setColor(1, 1, 1, 1)
 	love.graphics.draw(canvasTest, 0, 0)
-
+	love.graphics.setBlendMode("alpha")
 
 
 	local w, h = love.graphics.getDimensions()
@@ -75,6 +75,21 @@ function love.draw()
 
 	love.graphics.setColor(1, 1, 1, 1)
 	love.graphics.circle("fill", w * .5, h * .5, 2)
+
+
+
+	--[[
+	LKVoxR.PushUniverse(UnivTest)
+		x = math.floor(w * .5)
+		y = math.floor(h * .5)
+		local dir = LKVoxR.ScreenToWorldDir(x, y)
+
+		local hit, side, dist, hitPos, hitNormal, voxID, mapPos = LKVoxR.RaycastWorld(LKVoxR.CamPos, dir)
+
+		love.graphics.setColor(1, 0, 0, 1)
+		love.graphics.print("Block Pos; " .. mapPos[1] .. ":" .. mapPos[2] .. ":" .. mapPos[3], 0, 0)
+	LKVoxR.PopUniverse()
+	]]--
 
 	--LKVoxR.DrawCloudCanvasTest()
 end

@@ -29,10 +29,12 @@ function LKVoxR.GenerateVolMap(chunk)
 	chunk._volMap:setFilter("nearest", "nearest", 0)
 
 
+	local _oldCanvas = love.graphics.getCanvas()
+	local _oldShader = love.graphics.getShader()
 	for y = 0, LKVOXR_CY_P - 1 do
 		local indLayer = (y + 1)
+		love.graphics.setShader()
 		love.graphics.setCanvas(chunk._volMap, indLayer)
-
 
 		for i = 0, (LKVOXR_CX_P * LKVOXR_CZ_P) - 1 do
 			local xc = (i % LKVOXR_CX_P)
@@ -45,6 +47,8 @@ function LKVoxR.GenerateVolMap(chunk)
 			love.graphics.rectangle("fill", xc, zc, 1, 1)
 		end
 
-		love.graphics.setCanvas()
+		love.graphics.setCanvas(_oldCanvas)
+		love.graphics.setShader(_oldShader)
+
 	end
 end

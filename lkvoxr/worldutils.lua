@@ -48,6 +48,7 @@ end
 
 
 function LKVoxR.NewChunk(cx, cy, cz)
+	print("generate chunk at " .. cx .. ", " .. cy .. ", " .. cz)
 	local chunkData = {}
 
 	for i = 0, (LKVOXR_CX_P * LKVOXR_CY_P * LKVOXR_CZ_P) - 1 do
@@ -165,6 +166,22 @@ function LKVoxR.SetWorldContents(x, y, z, to)
 	theChunk[bInd] = to
 
 	LKVoxR.OnBlockUpdate(theChunk, bx, by, bz, to)
+end
+
+
+-- TODO threaded logic n shit to make this fast
+-- also do slow-building rather than all at once aswell since we have plenty of renderdist
+function LKVoxR.GenerateChunkAtPosition(cx, cy, cz)
+	local hash = LKVoxR.ChunkHash(cx, cy, cz)
+
+	local theChunk = LKVoxR.CurrUniv["chunks"][hash]
+	if theChunk then
+		return
+	end
+
+	local cdata = LKVoxR.NewChunk(cx, cy, cz)
+	LKVoxR.GenerateVolMap(cdata)
+	LKVoxR.CurrUniv["chunks"][hash] = cdata
 end
 
 

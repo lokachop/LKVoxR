@@ -231,6 +231,7 @@ local function updateChunkLists()
 
 			local chunkCurr = LKVoxR.GetWorldChunk(cx, cy, cz)
 			if not chunkCurr then
+				--LKVoxR.GenerateChunkAtPosition(LKVoxR.WorldToChunkIndex(cx, cy, cz))
 				goto _contSend
 			end
 
@@ -247,6 +248,10 @@ local function updateChunkLists()
 			::_contSend::
 		end
 	end
+	if #listChunks <= 0 then
+		return
+	end
+
 
 	sendIfExist("chunkOrigins", unpack(chunkOrigins))
 	sendIfExist("chunkList", unpack(listChunks))
@@ -257,9 +262,10 @@ end
 
 
 
-local cloudSz = 512
+local cloudSz = 32
 local canvasClouds = love.graphics.newCanvas(cloudSz, cloudSz)
 canvasClouds:setWrap("mirroredrepeat")
+canvasClouds:setFilter("nearest", "nearest", 0)
 local function initializeCloudTexture()
 	-- use noise to gen it
 	local _oldCanvas = love.graphics.getCanvas()

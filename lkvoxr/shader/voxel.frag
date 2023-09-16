@@ -33,6 +33,7 @@ uniform Image texCloud;
 uniform int texCloudSz;
 
 const vec3 worldUp = vec3(0.0, -1.0, 0.0);
+const float PI = 3.14159265359;
 
 
 struct hit {
@@ -47,6 +48,11 @@ struct hitResult {
     vec3 pos;
     vec3 norm;
     int id;
+    float dist;
+};
+
+struct hitResultFAF {
+    bool didHit;
     float dist;
 };
 
@@ -111,9 +117,9 @@ voxelQuery getVoxel(ivec3 p) {
     */
 
 
-    vec3 col = vec3(0, 0, id); //vec4(abs(sample.xyz / chunkSize.xzy), 0.0);
+    //vec3 col = vec3(0, 0, float(id) / 6); //vec4(abs(sample.xyz / chunkSize.xzy), 0.0);
     if (id != 0)
-        return voxelQuery(true , col.xyz, id);
+        return voxelQuery(true , vec3(1.0, 1.0, 1.0), id);
     else
         return voxelQuery(false, vec3(0.0, 0.0, 0.0), 0);
 }
@@ -165,6 +171,7 @@ vec3 textureFunc(vec3 norm, vec3 pos, vec3 rayDir, vec3 col, int side, int id, f
 
     cont *= doBlockShade ? blockShadeList[side] : 1;
 
+    //vec3 texCol = vec3(id / 3, 0, 0);
     return cont.xyz;
 }
 
@@ -253,6 +260,28 @@ hitResult intersectLK(vec3 rayPos, vec3 rayDir) {
     return hitResult(false, vec3(0, 0, 0), vec3(0, 0, 0), vec3(0, 1, 0), 0, 1e32);
 }
 
+const int STEPS_FAF = 16;
+const float FAF_ADD = 0.1;
+
+hitResultFAF fafIntersect(vec3 rayPos, vec3 rayDir) {
+    vec3 posAdditive = rayDir * FAF_ADD;
+    vec3 pollPos = rayPos + posAdditive;
+
+    for(int i = 0; i < STEPS_FAF; i++) {
+        ivec3 askPos = ivec3(pollPos);
+
+        voxelQuery h = getVoxel(ivec3(askPos));
+        if(h.hasVoxel) {
+            return hitResultFAF(true, length(posAdditive));
+        }
+        
+        posAdditive += (rayDir * FAF_ADD);
+        pollPos += posAdditive;
+    }
+
+    return hitResultFAF(false, length(posAdditive));
+}
+
 
 vec3 getDir(vec2 screenCords, vec2 screenSize, vec2 uv) {
     float coeff = tan((camFOV / 2) * (3.1416 / 180)) * 2.71828;
@@ -297,6 +326,9 @@ planeIntersectResult IntersectRayPlane(vec3 rayOrigin, vec3 rayDirection, vec3 p
   return planeIntersectResult(true, intersectionPoint);
 }
 
+
+
+
 vec4 effect(vec4 color, Image tex, vec2 textureCoords, vec2 screenCoords) {
 
     vec2 uv = screenCoords / screenSize.xy - 0.5;
@@ -323,7 +355,6 @@ vec4 effect(vec4 color, Image tex, vec2 textureCoords, vec2 screenCoords) {
             hitResult sunRay = intersectLK(sunRayPos, shadowDir);
             data.col *= sunRay.didHit ? shadowMul : 1;
         }
-
 
         vec3 camDirInv = vec3(camDir);
         mat4 matrixCamInv = viewMatrix(vec3(0, 0, 0), camDirInv, worldUp);
