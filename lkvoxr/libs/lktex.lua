@@ -8,6 +8,17 @@
 LKTEX = LKTEX or {}
 LKTEX.Textures = LKTEX.Textures or {}
 
+local _nameLUT = {}
+local _idLUT = {}
+local _lastID = 0
+function LKTEX.DeclareFromData(name, data)
+    _lastID = _lastID + 1
+    LKTEX.Textures[_lastID] = data
+    _nameLUT[name] = _lastID
+    _idLUT[_lastID] = name
+end
+
+
 -- for cc
 local _COMPUTERCRAFT = false
 
@@ -120,11 +131,29 @@ function LKTEX.LoadPPM(name, path)
     data.data = {w, h}
 
     closeFile(fObj)
-    LKTEX.Textures[name] = data
+
+    LKTEX.DeclareFromData(name, data)
 end
 
+function LKTEX.GetByName(name)
+    return LKTEX.Textures[_nameLUT[name]]
+end
+
+function LKTEX.GetByIndex(idx)
+    return LKTEX.Textures[idx or 1]
+end
+
+function LKTEX.GetNameByIndex(idx)
+    return _idLUT[idx or 1]
+end
+
+function LKTEX.GetIndexByName(Name)
+    return _nameLUT[name]
+end
+
+
+LKTEX.LoadPPM("none",       "textures/loka_lq.ppm")
 LKTEX.LoadPPM("loka",       "textures/loka_lq.ppm")
 LKTEX.LoadPPM("jelly",      "textures/jelly_lq.ppm")
 LKTEX.LoadPPM("jet",        "textures/jet_lq.ppm")
 LKTEX.LoadPPM("mandrill",   "textures/mandrill_lq.ppm")
-LKTEX.LoadPPM("none",       "textures/loka_lq.ppm")

@@ -21,9 +21,9 @@ function LKVoxR.WorldGen(x, y, z)
 		local ys = y / 16
 		local zs = z / 16
 
-		local worl = LKNoise.Worley.worley3D(xs, ys, zs)
+		local worl = LKNoise.Perlin3D.Perlin(xs, ys, zs)
 
-		if worl > .5 then
+		if worl > -.2 then
 			local isRoof = (y + 1) > valCheck
 			if isRoof then
 				local xs2 = x / 16
@@ -48,6 +48,7 @@ end
 
 
 function LKVoxR.NewChunk(cx, cy, cz)
+	print("generate chunk at " .. cx .. ", " .. cy .. ", " .. cz)
 	local chunkData = {}
 
 	for i = 0, (LKVOXR_CX_P * LKVOXR_CY_P * LKVOXR_CZ_P) - 1 do
@@ -57,6 +58,10 @@ function LKVoxR.NewChunk(cx, cy, cz)
 
 
 		chunkData[i] = LKVoxR.WorldGen(xc + (cx * LKVOXR_CX_P), yc + (cy * LKVOXR_CY_P), zc + (cz * LKVOXR_CZ_P))
+	end
+
+	if LKVoxR.LOVE_ACCEL then
+		LKVoxR.GenerateVolMap(chunkData)
 	end
 
 	return chunkData
@@ -103,6 +108,26 @@ function LKVoxR.WorldToChunkHash(x, y, z)
 	return table.concat(tblConcat, "")
 end
 
+function LKVoxR.GetWorldChunkOrigin(x, y, z)
+	local xc = math.floor(x / LKVOXR_CX_P) * LKVOXR_CX_P
+	local yc = math.floor(y / LKVOXR_CY_P) * LKVOXR_CY_P
+	local zc = math.floor(z / LKVOXR_CZ_P) * LKVOXR_CZ_P
+
+	return xc, yc, zc
+end
+
+
+function LKVoxR.GetWorldChunk(x, y, z)
+	local cx, cy, cz = LKVoxR.WorldToChunkIndex(x, y, z)
+	local hash = LKVoxR.ChunkHash(cx, cy, cz)
+
+	local theChunk = LKVoxR.CurrUniv["chunks"][hash]
+	if not theChunk then
+		return
+	end
+
+	return theChunk
+end
 
 function LKVoxR.GetWorldContents(x, y, z)
 	local cx, cy, cz = LKVoxR.WorldToChunkIndex(x, y, z)
@@ -119,6 +144,13 @@ function LKVoxR.GetWorldContents(x, y, z)
 	return theChunk[bInd]
 end
 
+
+function LKVoxR.OnBlockUpdate(chunk, x, y, z, val)
+	if LKVoxR.LOVE_ACCEL then
+		LKVoxR.UpdateVolMap(chunk, x, y, z, val)
+	end
+end
+
 function LKVoxR.SetWorldContents(x, y, z, to)
 	local cx, cy, cz = LKVoxR.WorldToChunkIndex(x, y, z)
 	local hash = LKVoxR.ChunkHash(cx, cy, cz)
@@ -132,6 +164,24 @@ function LKVoxR.SetWorldContents(x, y, z, to)
 	local bInd = LKVoxR.IndexFromCoords(bx, by, bz)
 
 	theChunk[bInd] = to
+
+	LKVoxR.OnBlockUpdate(theChunk, bx, by, bz, to)
+end
+
+
+-- TODO threaded logic n shit to make this fast
+-- also do slow-building rather than all at once aswell since we have plenty of renderdist
+function LKVoxR.GenerateChunkAtPosition(cx, cy, cz)
+	local hash = LKVoxR.ChunkHash(cx, cy, cz)
+
+	local theChunk = LKVoxR.CurrUniv["chunks"][hash]
+	if theChunk then
+		return
+	end
+
+	local cdata = LKVoxR.NewChunk(cx, cy, cz)
+	LKVoxR.GenerateVolMap(cdata)
+	LKVoxR.CurrUniv["chunks"][hash] = cdata
 end
 
 
@@ -197,7 +247,7 @@ function LKVoxR.RaycastWorld(pos, dir, steps)
 
 
 	local voxID = 0
-	for i = 1, (dist or LKVOXR_TRACE_STEPS) do
+	for i = 1, (steps or LKVOXR_TRACE_STEPS) do
 		if sideDistX < sideDistY then
 			if sideDistX < sideDistZ then
 				sideDistX = sideDistX + deltaDistX

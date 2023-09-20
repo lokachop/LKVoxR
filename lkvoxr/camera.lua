@@ -1,6 +1,6 @@
 LKVoxR = LKVoxR or {}
 
-LKVoxR.CamPos = Vector(4, 6, 4)
+LKVoxR.CamPos = Vector(0, 42.5, 0)
 LKVoxR.CamAng = Vector(0, 0, 0)
 LKVoxR.CamAngX = Vector(0, 0, 0)
 LKVoxR.CamAngY = Vector(0, 0, 0)

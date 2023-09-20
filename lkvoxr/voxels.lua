@@ -1,5 +1,6 @@
 LKVoxR = LKVoxR or {}
 LKVoxR.Voxels = LKVoxR.Voxels or {}
+local _voxelCount = 0
 
 local name_to_id_lut = {}
 local id_to_name_lut = {}
@@ -15,6 +16,7 @@ function LKVoxR.NewVoxel(name, parametri)
 
     name_to_id_lut[name] = last_id
     id_to_name_lut[last_id] = name
+    _voxelCount = _voxelCount + 1
 end
 
 function LKVoxR.VoxelNameToID(name)
@@ -29,6 +31,9 @@ function LKVoxR.GetVoxelInfoFromID(id)
     return LKVoxR.Voxels[id]
 end
 
+function LKVoxR.GetVoxelCount()
+    return _voxelCount
+end
 
 LKVoxR.NewVoxel("test1", {
     tex = "jelly",

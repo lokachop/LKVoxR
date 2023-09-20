@@ -1,11 +1,11 @@
 LKVoxR = LKVoxR or {}
+LKVoxR.LOVE_ACCEL = love and true
 
 
 
-
-local relaPath = "lkvoxr/"
+LKVoxR.RelaPath = "lkvoxr/"
 function LKVoxR.LoadFile(path)
-    require(relaPath .. path)
+    require(LKVoxR.RelaPath .. path)
 end
 
 LKVoxR.LoadFile("libs/lmat") -- make sure to load lmat first
@@ -20,6 +20,11 @@ if (not Vector) or (not Matrix) or (not Angle) then -- hack hack
     Angle  = LANG.Angle
 end
 
+
+if LKVoxR.LOVE_ACCEL then
+    LKVoxR.LoadFile("loveaccel")
+end
+
 LKVoxR.LoadFile("consts")
 LKVoxR.LoadFile("camera")
 LKVoxR.LoadFile("voxels")
@@ -28,3 +33,9 @@ LKVoxR.LoadFile("universes")
 LKVoxR.LoadFile("rendervoxel")
 LKVoxR.LoadFile("dynafps")
 LKVoxR.LoadFile("playercontroller")
+LKVoxR.LoadFile("prefabs")
+
+
+if LKVoxR.LOVE_ACCEL then
+    LKVoxR.LoadFile("loveaccel_post")
+end
