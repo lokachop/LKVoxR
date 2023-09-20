@@ -2,7 +2,7 @@ LKVoxR = LKVoxR or {}
 
 local avgDtSamples = {}
 local sID = 0
-local sampleCount = 4
+local sampleCount = 2
 
 local dtTarget = 1 / LKVOXR_DYNFPS_FPS_TARGET
 local nextUpgrade = 0

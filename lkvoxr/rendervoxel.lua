@@ -333,6 +333,13 @@ function LKVoxR.RenderActiveUniverse()
 			local colBG = 48 + dotVal * 96
 			local colBB = 64 + dotVal * 128
 
+
+
+			local dotSun = math.max(dirGet:Dot(sunDir) - 0.985, 0) * 100
+			colBR = colBR + dotSun * 128
+			colBG = colBG + dotSun * 64
+			colBB = colBB + dotSun * 16
+
 			drawPixel(colBR, colBG, colBB, xc, yc)
 		end
 

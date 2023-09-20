@@ -21,9 +21,9 @@ function LKVoxR.WorldGen(x, y, z)
 		local ys = y / 16
 		local zs = z / 16
 
-		local worl = LKNoise.Worley.worley3D(xs, ys, zs)
+		local worl = LKNoise.Perlin3D.Perlin(xs, ys, zs)
 
-		if worl > .5 then
+		if worl > -.2 then
 			local isRoof = (y + 1) > valCheck
 			if isRoof then
 				local xs2 = x / 16

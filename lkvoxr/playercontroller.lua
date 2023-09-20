@@ -55,7 +55,7 @@ function LKVoxR.PlayerController(dt)
 	end
 
 	if not grounded then
-		LKVoxR.PlayerVel[2] = LKVoxR.PlayerVel[2] - (dt * .6)
+		LKVoxR.PlayerVel[2] = LKVoxR.PlayerVel[2] - 0.0075
 	else
 		LKVoxR.PlayerVel[2] = 0
 		LKVoxR.PlayerPos[2] = hitPos[2]
@@ -63,13 +63,13 @@ function LKVoxR.PlayerController(dt)
 
 
 	if grounded and love.keyboard.isDown("space") then
-		LKVoxR.PlayerVel[2] = 0.25
+		LKVoxR.PlayerVel[2] = 0.15
 		LKVoxR.PlayerPos[2] = LKVoxR.PlayerPos[2] + .1
 	end
 
-	local vMul = 3
+	local vMul = 0.025
 	if love.keyboard.isDown("lshift") then
-		vMul = 6
+		vMul = 0.05
 	end
 
 	local fow = LKVoxR.CamAng:Right()
@@ -83,8 +83,8 @@ function LKVoxR.PlayerController(dt)
 	rig:Mul(vMul)
 
 	if love.keyboard.isDown("w") then
-		LKVoxR.PlayerVel[1] = fow[1]
-		LKVoxR.PlayerVel[3] = fow[3]
+		LKVoxR.PlayerVel[1] = LKVoxR.PlayerVel[1] + fow[1]
+		LKVoxR.PlayerVel[3] = LKVoxR.PlayerVel[3] + fow[3]
 	end
 
 	if love.keyboard.isDown("s") then
@@ -102,8 +102,8 @@ function LKVoxR.PlayerController(dt)
 		LKVoxR.PlayerVel[3] = LKVoxR.PlayerVel[3] + rig[3]
 	end
 
-	LKVoxR.PlayerVel[1] = LKVoxR.PlayerVel[1] * dt
-	LKVoxR.PlayerVel[3] = LKVoxR.PlayerVel[3] * dt
+	LKVoxR.PlayerVel[1] = LKVoxR.PlayerVel[1] * .65
+	LKVoxR.PlayerVel[3] = LKVoxR.PlayerVel[3] * .65
 
 
 	local traceStart = LKVoxR.PlayerPos + _upOne
